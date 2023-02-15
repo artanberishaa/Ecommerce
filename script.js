@@ -1,30 +1,54 @@
 const bar = document.getElementsById('bar');
 const close = document.getElementsById('close');
 const nav = document.getElementById('navbar');
-const userData = [
-    {username: "user1", password: "pass1"},
-    {username: "user2", password: "pass2"},
-    {username: "user3", password: "pass3"}
-  ];
-  
-  function checkLogin(username, password) {
-    for (let i = 0; i < userData.length; i++) {
-      if (username === userData[i].username && password === userData[i].password) {
-        return true;
-      }
+
+function getCredentials() {
+  const user = {
+    email: document.querySelector('[name="email"]').value,
+    password: document.querySelector('[name="password"]').value
+  };
+
+  return user;
+}
+
+// Log in either using the given email/password or the token from storage
+function login(credentials) {
+  const payload = credentials ?
+    Object.assign({ strategy: 'local' }, credentials) : {};
+
+  return client.authenticate(payload)
+    .then(showChat)
+    .catch(showLogin);
+}
+
+document.addEventListener('click', function(ev) {
+  switch(ev.target.id) {
+    case 'signup': {
+      const user = getCredentials();
+
+      // For signup, create a new user and then log them in
+      client.service('users').create(user)
+        .then(() => login(user));
+
+      break;
     }
-    return false;
+    case 'login': {
+      const user = getCredentials();
+
+      login(user);
+
+      break;
+    }
+    case 'logout': {
+      client.logout().then(() => {
+         document.getElementById('app').innerHTML = loginHTML;
+      });
+
+      break;
+    }
   }
-  
-  const username = prompt("Enter your username:");
-  const password = prompt("Enter your password:");
-  
-  if (checkLogin(username, password)) {
-    alert("Login successful!");
-  } else {
-    alert("Incorrect username or password.");
-  }
-  
+});
+
 if (bar) {
     bar.addEventListener('click', () => {
         nav.classList.add('active');
